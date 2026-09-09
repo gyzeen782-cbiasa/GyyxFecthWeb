@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GyyxFetch — Web Source Inspector</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- Scanline overlay -->
+<div class="scanlines" aria-hidden="true"></div>
+<div class="grid-overlay" aria-hidden="true"></div>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">
+      <span class="logo-bracket">[</span>
+      <span class="logo-text">GyyxFetch</span>
+      <span class="logo-bracket">]</span>
+    </div>
+    <span class="header-sep">|</span>
+    <span class="header-sub">Web Source Inspector</span>
+  </div>
+  <div class="header-right">
+    <div class="status-dot" id="statusDot"></div>
+    <span class="status-label" id="statusLabel">IDLE</span>
+  </div>
+</header>
+
+<!-- Hero / Scan Bar -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="eyebrow-line"></span>
+    <span class="eyebrow-text">TARGET ACQUISITION</span>
+    <span class="eyebrow-line"></span>
+  </div>
+  <h1 class="hero-title">Extract Any<br/>Web Source</h1>
+  <p class="hero-desc">Scan a URL and pull every HTML, CSS, JavaScript, and asset file the browser would load. Real network requests — not a crawler guess.</p>
+
+  <div class="scan-terminal">
+    <div class="terminal-bar">
+      <div class="term-dots">
+        <span class="td td-r"></span>
+        <span class="td td-y"></span>
+        <span class="td td-g"></span>
+      </div>
+      <span class="term-title">gyyx://scan</span>
+    </div>
+    <div class="scan-input-wrap">
+      <span class="scan-prompt">$ fetch</span>
+      <input
+        type="url"
+        id="urlInput"
+        class="scan-input"
+        placeholder="https://example.com"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="scan-btn" id="scanBtn">
+        <span id="scanBtnText">SCAN</span>
+        <svg id="scanBtnIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 19 12"/><polyline points="13 6 19 12 13 18"/></svg>
+      </button>
+    </div>
+
+    <!-- Progress -->
+    <div class="scan-progress" id="scanProgress" style="display:none">
+      <div class="progress-track">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="progress-steps" id="progressSteps"></div>
+    </div>
+  </div>
+
+  <!-- Quick examples -->
+  <div class="quick-examples">
+    <span class="qe-label">try:</span>
+    <button class="qe-btn" data-url="https://example.com">example.com</button>
+    <button class="qe-btn" data-url="https://github.com">github.com</button>
+    <button class="qe-btn" data-url="https://tailwindcss.com">tailwindcss.com</button>
+  </div>
+</section>
+
+<!-- Results -->
+<section class="results" id="results" style="display:none">
+
+  <!-- Site meta bar -->
+  <div class="site-meta" id="siteMeta">
+    <div class="meta-url" id="metaUrl">—</div>
+    <div class="meta-stats" id="metaStats"></div>
+    <div class="meta-techs" id="metaTechs"></div>
+    <div class="meta-actions">
+      <button class="action-btn" id="downloadZipBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export ZIP
+      </button>
+      <button class="action-btn action-btn-ghost" id="newScanBtn">New Scan</button>
+    </div>
+  </div>
+
+  <!-- Split view -->
+  <div class="split-view">
+
+    <!-- File tree sidebar -->
+    <aside class="file-tree" id="fileTree">
+      <div class="tree-header">
+        <span class="tree-title">FILES</span>
+        <span class="tree-count" id="treeCount">0</span>
+      </div>
+      <div class="tree-search-wrap">
+        <input type="text" id="treeSearch" class="tree-search" placeholder="filter files..."/>
+      </div>
+      <div class="tree-list" id="treeList"></div>
+    </aside>
+
+    <!-- Code viewer -->
+    <div class="code-panel" id="codePanel">
+      <div class="code-topbar" id="codeTopbar">
+        <div class="code-file-info">
+          <span class="code-file-icon" id="codeFileIcon">📄</span>
+          <span class="code-file-name" id="codeFileName">Select a file</span>
+          <span class="code-file-type" id="codeFileType"></span>
+        </div>
+        <div class="code-actions">
+          <span class="code-size" id="codeSize"></span>
+          <button class="icon-btn" id="copyFileBtn" title="Copy content">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+          <button class="icon-btn" id="downloadFileBtn" title="Download file">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <a class="icon-btn" id="openUrlBtn" href="#" target="_blank" title="Open original URL">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="code-empty" id="codeEmpty">
+        <div class="empty-icon">⟨/⟩</div>
+        <p>Select a file from the tree to inspect its source</p>
+      </div>
+
+      <!-- Code view -->
+      <div class="code-view" id="codeView" style="display:none">
+        <div class="code-gutter" id="codeGutter"></div>
+        <pre class="code-content" id="codeContent"></pre>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Error state -->
+<div class="error-banner" id="errorBanner" style="display:none">
+  <span class="error-icon">⚠</span>
+  <span id="errorText">Something went wrong.</span>
+  <button class="error-dismiss" id="errorDismiss">✕</button>
+</div>
+
+<!-- Toast -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
